@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart' as xml;
 import 'chat.dart';
 import 'live_scoring.dart';
 import 'trades.dart';
 
-void main() => runApp(MyApp());
+Future<List<Franchise>> fetchFranchises() async {
+  final response = await http.get(leagueUrl);
+
+  if (response.statusCode == 200) {
+    return xml.parse(response.body)
+        .findAllElements('franchise')
+        .map((element) => Franchise.fromXml(element))
+        .toList();
+  } else {
+    throw Exception('Cannot load franchises');
+  }
+}
+
+void main() async {
+  final franchises = await fetchFranchises();
+  runApp(MyApp(franchises));
+}
+
+const leagueUrl = 'http://www66.myfantasyleague.com/2018/export?TYPE=league&L=40298';
 
 class MyApp extends StatelessWidget {
+  final List<Franchise> franchises;
+
+  MyApp(this.franchises);
+
   @override
   build(BuildContext context) {
     return MaterialApp(
@@ -13,29 +38,36 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: MyHomePage(title: 'Chat'),
+      home: MyHomePage(title: 'Chat', franchises: franchises),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.franchises}) : super(key: key);
 
-  final title;
+  final String title;
+  final List<Franchise> franchises;
 
   @override
   State<StatefulWidget> createState() {
-    return MyHomePageState();
+    return MyHomePageState(franchises);
   }
 }
 
 class MyHomePageState extends State<MyHomePage> {
+  final List<Franchise> franchises;
+
+  MyHomePageState(this.franchises) {
+    _children = [
+      LiveScoringScreen(franchises),
+      ChatScreen(),
+      TradesScreen(),
+    ];
+  }
+
   var _currentIndex = 0;
-  var _children = [
-    LiveScoringScreen(),
-    ChatScreen(),
-    TradesScreen(),
-  ];
+  var _children = [];
 
   void onTabTapped(int index) {
     setState(() {

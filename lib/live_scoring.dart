@@ -3,14 +3,17 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 
-const leagueUrl = 'http://www66.myfantasyleague.com/2018/export?TYPE=league&L=40298';
 const url = 'http://www66.myfantasyleague.com/2018/export?TYPE=liveScoring&L=40298';
 
 class LiveScoringScreen extends StatelessWidget {
+  final List<Franchise> franchises;
+
+  LiveScoringScreen(this.franchises);
+
   @override
   build(BuildContext context) {
     return FutureBuilder<List<MatchUp>>(
-      future: fetchMatchUps(),
+      future: fetchMatchUps(franchises),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return MatchUpList(snapshot.data);
@@ -71,21 +74,7 @@ class MatchUpFranchiseRow extends StatelessWidget {
   }
 }
 
-Future<List<Franchise>> fetchFranchises() async {
-  final response = await http.get(leagueUrl);
-
-  if (response.statusCode == 200) {
-    return xml.parse(response.body)
-        .findAllElements('franchise')
-        .map((element) => Franchise.fromXml(element))
-        .toList();
-  } else {
-    throw Exception('Cannot load franchises');
-  }
-}
-
-Future<List<MatchUp>> fetchMatchUps() async {
-  final franchises = await fetchFranchises();
+Future<List<MatchUp>> fetchMatchUps(List<Franchise> franchises) async {
   final response = await http.get(url);
 
   if (response.statusCode == 200) {
