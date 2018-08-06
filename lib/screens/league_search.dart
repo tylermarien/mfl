@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 import 'package:mfl/screens/leagues.dart';
 import 'package:mfl/models/league.dart';
+import 'package:mfl/screens/login.dart';
 
 class LeagueSearchScreen extends StatefulWidget {
   @override
@@ -30,7 +31,11 @@ class LeagueSearchScreenState extends State<LeagueSearchScreen> {
             .map((element) => League.fromXml(element))
             .toList();
 
-          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LeaguesScreen(leagues)));
+          if (leagues.length == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LoginScreen(leagues.first)));
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => LeaguesScreen(leagues)));
+          }
         });
   }
 

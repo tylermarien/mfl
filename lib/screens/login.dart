@@ -31,9 +31,9 @@ class LoginScreen extends StatelessWidget {
         final cookieName = status.first.attributes.first.name.toString();
         final cookieValue = status.first.attributes.first.value;
 
-        Navigator.pushReplacement(context, MaterialPageRoute(
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
           builder: (context) => MainScreen(league, cookieName, cookieValue),
-        ));
+        ), (route) => false);
 
         return '';
       } else {
@@ -47,7 +47,25 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LoginForm(this.login),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                league.name,
+                style: TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+              Expanded(
+                child: LoginForm(login),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

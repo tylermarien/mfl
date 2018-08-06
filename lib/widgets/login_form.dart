@@ -66,13 +66,10 @@ class LoginFormState extends State<LoginForm> {
       children.insert(0, Text(error));
     }
 
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: ListView(
-          children: children,
-        ),
+    return Form(
+      key: _formKey,
+      child: ListView(
+        children: children,
       ),
     );
   }
