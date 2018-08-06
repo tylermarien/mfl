@@ -40,10 +40,7 @@ class MyApp extends StatefulWidget {
 }
 
 class MyAppState extends State<MyApp> {
-  String cookieName;
-  String cookieValue;
-
-  Future<String> login(String username, String password) async {
+  Future<String> login(BuildContext context, String username, String password) async {
     final body = {
       'LEAGUE_ID': '40298',
       'USERNAME': username,
@@ -59,10 +56,12 @@ class MyAppState extends State<MyApp> {
       if (error.isEmpty) {
         final status = data.findAllElements('status');
 
-        this.setState(() {
-          cookieName = status.first.attributes.first.name.toString();
-          cookieValue = status.first.attributes.first.value;
-        });
+        final cookieName = status.first.attributes.first.name.toString();
+        final cookieValue = status.first.attributes.first.value;
+
+        Navigator.pushReplacement(context, MaterialPageRoute(
+            builder: (context) => MainScreen(cookieName, cookieValue),
+        ));
 
         return 'Login successful';
       } else {
@@ -75,29 +74,38 @@ class MyAppState extends State<MyApp> {
 
   @override
   build(BuildContext context) {
-    Widget home;
-
-    if (cookieValue != null) {
-      home = FutureBuilder(
-        future: fetchFranchises(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return MyHomePage(title: 'Chat', franchises: snapshot.data, cookieName: cookieName, cookieValue: cookieValue);
-          }
-
-          return Center(child: CircularProgressIndicator());
-        },
-      );
-    } else {
-      home = LoginScreen(login: login);
-    }
-
     return MaterialApp(
       title: 'MyFantasyLeague',
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: home,
+      home: LoginScreen(login: login),
+    );
+  }
+}
+
+class MainScreen extends StatelessWidget {
+  final String cookieName;
+  final String cookieValue;
+
+  MainScreen(this.cookieName, this.cookieValue);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: fetchFranchises(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return MyHomePage(
+            title: 'Chat',
+            franchises: snapshot.data,
+            cookieName: cookieName,
+            cookieValue: cookieValue,
+          );
+        }
+
+        return Center(child: CircularProgressIndicator());
+      },
     );
   }
 }

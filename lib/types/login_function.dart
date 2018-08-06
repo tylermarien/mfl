@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'dart:async';
 
-typedef LoginFunction = Future<String> Function(String username, String password);
+typedef LoginFunction = Future<String> Function(BuildContext context, String username, String password);

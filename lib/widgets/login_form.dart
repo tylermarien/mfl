@@ -20,10 +20,10 @@ class LoginFormState extends State<LoginForm> {
   String password;
   String error = '';
 
-  void submit() async {
+  void submit(BuildContext context) async {
     _formKey.currentState.save();
 
-    final response = await this.login(username, password);
+    final response = await this.login(context, username, password);
     this.setState(() {
       error = response;
     });
@@ -50,7 +50,7 @@ class LoginFormState extends State<LoginForm> {
         child: RaisedButton(
           child: Text('Log in', style: TextStyle(color: Colors.white)),
           color: Colors.green,
-          onPressed: submit,
+          onPressed: () => submit(context),
         ),
       ),
     ];
