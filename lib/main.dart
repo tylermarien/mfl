@@ -55,7 +55,6 @@ class MyAppState extends State<MyApp> {
 
       if (error.isEmpty) {
         final status = data.findAllElements('status');
-
         final cookieName = status.first.attributes.first.name.toString();
         final cookieValue = status.first.attributes.first.value;
 
@@ -63,7 +62,7 @@ class MyAppState extends State<MyApp> {
             builder: (context) => MainScreen(cookieName, cookieValue),
         ));
 
-        return 'Login successful';
+        return '';
       } else {
         return error.first.text;
       }
@@ -129,16 +128,37 @@ class MyHomePageState extends State<MyHomePage> {
   final String cookieName;
   final String cookieValue;
 
-  MyHomePageState(this.franchises, this.cookieName, this.cookieValue) {
+  int _currentIndex = 0;
+  List<Widget> _children = [];
+  List<BottomNavigationBarItem> _items;
+
+  MyHomePageState(this.franchises, this.cookieName, this.cookieValue);
+
+  @override
+  void initState() {
+    super.initState();
+
     _children = [
       LiveScoringScreen(franchises),
       ChatScreen(cookieName, cookieValue, franchises),
       TradesScreen(),
     ];
-  }
 
-  var _currentIndex = 0;
-  var _children = [];
+    _items = [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.format_list_numbered),
+        title: Text('Live Scoring'),
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.chat),
+        title: Text('Chat'),
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.format_list_numbered),
+        title: Text('Trades'),
+      ),
+    ];
+  }
 
   void onTabTapped(int index) {
     setState(() {
@@ -150,26 +170,13 @@ class MyHomePageState extends State<MyHomePage> {
   build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: _items[_currentIndex].title,
         ),
         body: _children[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: onTabTapped,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.format_list_numbered),
-              title: Text('Live Scoring'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              title: Text('Chat'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.format_list_numbered),
-              title: Text('Trades'),
-            ),
-          ],
+          items: _items,
         ),
     );
   }

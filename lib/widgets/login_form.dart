@@ -16,33 +16,40 @@ class LoginFormState extends State<LoginForm> {
 
   LoginFormState(this.login);
 
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
   String username;
   String password;
   String error = '';
 
-  void submit(BuildContext context) async {
+  void submit(BuildContext context) {
     _formKey.currentState.save();
 
-    final response = await this.login(context, username, password);
-    this.setState(() {
-      error = response;
-    });
+    this.login(context, username, password)
+      .then((response) {
+        this.setState(() {
+          error = response;
+        });
+      });
   }
 
   @override
   Widget build(BuildContext context) {
     final children = [
       TextFormField(
+        controller: usernameController,
         decoration: InputDecoration(
           labelText: 'Username',
         ),
         onSaved: (value) => username = value,
       ),
       TextFormField(
-        obscureText: true,
+        controller: passwordController,
         decoration: InputDecoration(
           labelText: 'Password',
         ),
+        obscureText: true,
         onSaved: (value) => password = value,
       ),
       Container(
