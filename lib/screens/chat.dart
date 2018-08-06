@@ -4,29 +4,30 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 import 'dart:convert';
 import 'package:mfl/models/message.dart';
+import 'package:mfl/models/league.dart';
 import 'package:mfl/models/franchise.dart';
 import 'package:mfl/widgets/message_list.dart';
 import 'package:mfl/widgets/message_bar.dart';
 
-const host = 'www66.myfantasyleague.com';
-const leagueId = '40298';
-
 class ChatScreen extends StatefulWidget {
   final String cookieName;
   final String cookieValue;
+  final League league;
   final List<Franchise> franchises;
 
-  ChatScreen(this.cookieName, this.cookieValue, this.franchises);
+  ChatScreen(this.cookieName, this.cookieValue, this.franchises, this.league);
 
   @override
   State<StatefulWidget> createState() => ChatScreenState(
-    this.franchises,
-    this.cookieName,
-    this.cookieValue
+    league,
+    franchises,
+    cookieName,
+    cookieValue
   );
 }
 
 class ChatScreenState extends State<ChatScreen> {
+  final League league;
   final List<Franchise> franchises;
   final String cookieName;
   final String cookieValue;
@@ -36,17 +37,17 @@ class ChatScreenState extends State<ChatScreen> {
   TextEditingController controller = TextEditingController();
   List<Message> messages = List<Message>();
 
-  ChatScreenState(this.franchises, this.cookieName, this.cookieValue);
+  ChatScreenState(this.league, this.franchises, this.cookieName, this.cookieValue);
 
   void handleSendMessage(String message) {
-    sendMessage(cookieName, cookieValue, message)
+    sendMessage(league, cookieName, cookieValue, message)
         .then((http.Response response) {
           loadMessages();
         });
   }
 
   void loadMessages() {
-    fetchMessages(franchises).then((messages) {
+    fetchMessages(league, franchises).then((messages) {
       this.setState(() {
         this.messages = messages;
       });
@@ -84,8 +85,8 @@ class ChatScreenState extends State<ChatScreen> {
   }
 }
 
-Future<List<Message>> fetchMessages(List<Franchise> franchises) async {
-  final url = Uri.https(host, '/fflnetdynamic2018/${leagueId}_chat.xml');
+Future<List<Message>> fetchMessages(League league, List<Franchise> franchises) async {
+  final url = Uri.https(league.host, '/fflnetdynamic2018/${league.id}_chat.xml');
   final response = await http.get(url);
 
   if (response.statusCode == 200) {
@@ -98,14 +99,14 @@ Future<List<Message>> fetchMessages(List<Franchise> franchises) async {
   }
 }
 
-Future<http.Response> sendMessage(String cookieName, String cookieValue, String message) async {
+Future<http.Response> sendMessage(League league, String cookieName, String cookieValue, String message) async {
   final headers = {
     'Cookie': '$cookieName=$cookieValue',
   };
   final params = {
-    'L': leagueId,
+    'L': league.id,
     'MESSAGE': message,
   };
-  final url = Uri.https(host, '/2018/chat_save', params);
+  final url = Uri.https(league.host, '/2018/chat_save', params);
   return http.get(url, headers: headers);
 }

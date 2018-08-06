@@ -42,6 +42,7 @@ class MainScreen extends StatelessWidget {
         if (snapshot.hasData) {
           return MyHomePage(
             title: 'Chat',
+            league: league,
             franchises: snapshot.data,
             cookieName: cookieName,
             cookieValue: cookieValue,
@@ -55,20 +56,22 @@ class MainScreen extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.franchises, this.cookieName, this.cookieValue}) : super(key: key);
+  MyHomePage({Key key, this.title, this.league, this.franchises, this.cookieName, this.cookieValue}) : super(key: key);
 
   final String title;
   final String cookieName;
   final String cookieValue;
+  final League league;
   final List<Franchise> franchises;
 
   @override
   State<StatefulWidget> createState() {
-    return MyHomePageState(franchises, cookieName, cookieValue);
+    return MyHomePageState(league, franchises, cookieName, cookieValue);
   }
 }
 
 class MyHomePageState extends State<MyHomePage> {
+  final League league;
   final List<Franchise> franchises;
   final String cookieName;
   final String cookieValue;
@@ -77,16 +80,16 @@ class MyHomePageState extends State<MyHomePage> {
   List<Widget> _children = [];
   List<BottomNavigationBarItem> _items;
 
-  MyHomePageState(this.franchises, this.cookieName, this.cookieValue);
+  MyHomePageState(this.league, this.franchises, this.cookieName, this.cookieValue);
 
   @override
   void initState() {
     super.initState();
 
     _children = [
-      LiveScoringScreen(franchises),
-      ChatScreen(cookieName, cookieValue, franchises),
-      TradesScreen(),
+      LiveScoringScreen(league, franchises),
+      ChatScreen(cookieName, cookieValue, franchises, league),
+      TradesScreen(league),
     ];
 
     _items = [

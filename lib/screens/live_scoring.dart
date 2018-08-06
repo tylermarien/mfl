@@ -2,31 +2,32 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
-import 'package:mfl/models/match_up_franchise.dart';
+import 'package:mfl/widgets/match_up_list.dart';
 import 'package:mfl/models/franchise.dart';
+import 'package:mfl/models/league.dart';
 import 'package:mfl/models/match_up.dart';
 
-const url = 'http://www66.myfantasyleague.com/2018/export?TYPE=liveScoring&L=40298';
-
 class LiveScoringScreen extends StatefulWidget {
+  final League league;
   final List<Franchise> franchises;
 
-  LiveScoringScreen(this.franchises);
+  LiveScoringScreen(this.league, this.franchises);
 
   @override
-  State<StatefulWidget> createState() => LiveScoringScreenState(franchises);
+  State<StatefulWidget> createState() => LiveScoringScreenState(league, franchises);
 }
 
 class LiveScoringScreenState extends State<LiveScoringScreen> {
+  final League league;
   final List<Franchise> franchises;
   List<MatchUp> matchUps = List<MatchUp>();
 
-  LiveScoringScreenState(this.franchises);
+  LiveScoringScreenState(this.league, this.franchises);
 
   Future<Null> loadMatchUps() {
     final completer = Completer<Null>();
 
-    fetchMatchUps(franchises).then((matchUps) {
+    fetchMatchUps(league, franchises).then((matchUps) {
       this.setState(() {
         this.matchUps = matchUps;
       });
@@ -34,6 +35,25 @@ class LiveScoringScreenState extends State<LiveScoringScreen> {
     });
 
     return completer.future;
+  }
+
+  Future<List<MatchUp>> fetchMatchUps(League league, List<Franchise> franchises) async {
+    final params = {
+      'TYPE': 'liveScoring',
+      'L': league.id,
+    };
+    final url = Uri.https(league.host, '/2018/export', params);
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return xml.parse(response.body)
+          .findAllElements('matchup')
+          .map((element) => MatchUp.fromXml(franchises, element))
+          .toList();
+    } else {
+      throw Exception('Cannot fetch matchups');
+    }
   }
 
   @override
@@ -50,71 +70,4 @@ class LiveScoringScreenState extends State<LiveScoringScreen> {
       child: MatchUpList(matchUps),
     ),
   );
-}
-
-class MatchUpList extends StatelessWidget {
-  final List<MatchUp> matchUps;
-
-  MatchUpList(this.matchUps);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: matchUps.length,
-      itemBuilder: (context, index) => MatchUpRow(matchUps[index]),
-    );
-  }
-}
-
-class MatchUpRow extends StatelessWidget {
-  final MatchUp matchUp;
-
-  MatchUpRow(this.matchUp);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.only(left: 8.0, right: 8.0),
-          child: Column(
-            children: [
-              MatchUpFranchiseRow(matchUp.franchise1),
-              MatchUpFranchiseRow(matchUp.franchise2),
-            ],
-          ),
-        ),
-        Divider(),
-      ],
-    );
-  }
-}
-
-class MatchUpFranchiseRow extends StatelessWidget {
-  final MatchUpFranchise franchise;
-
-  MatchUpFranchiseRow(this.franchise);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(franchise.name)),
-        Text(franchise.score),
-      ],
-    );
-  }
-}
-
-Future<List<MatchUp>> fetchMatchUps(List<Franchise> franchises) async {
-  final response = await http.get(url);
-
-  if (response.statusCode == 200) {
-    return xml.parse(response.body)
-        .findAllElements('matchup')
-        .map((element) => MatchUp.fromXml(franchises, element))
-        .toList();
-  } else {
-    throw Exception('Cannot fetch matchups');
-  }
 }
