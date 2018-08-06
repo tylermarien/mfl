@@ -50,9 +50,9 @@ class ChatScreenState extends State<ChatScreen> {
     super.initState();
 
     loadMessages();
-    Timer.periodic(fetchDuration, (Timer timer) {
-      loadMessages();
-    });
+//    Timer.periodic(fetchDuration, (Timer timer) {
+//      loadMessages();
+//    });
   }
 
   @override

@@ -5,26 +5,48 @@ import 'package:xml/xml.dart' as xml;
 
 const url = 'http://www66.myfantasyleague.com/2018/export?TYPE=liveScoring&L=40298';
 
-class LiveScoringScreen extends StatelessWidget {
+class LiveScoringScreen extends StatefulWidget {
   final List<Franchise> franchises;
 
   LiveScoringScreen(this.franchises);
 
   @override
-  build(BuildContext context) {
-    return FutureBuilder<List<MatchUp>>(
-      future: fetchMatchUps(franchises),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return MatchUpList(snapshot.data);
-        } else if (snapshot.hasError) {
-          return Text('Could not load live scoring');
-        }
+  State<StatefulWidget> createState() => LiveScoringScreenState(franchises);
+}
 
-        return Center(child: CircularProgressIndicator());
-      },
-    );
+class LiveScoringScreenState extends State<LiveScoringScreen> {
+  final List<Franchise> franchises;
+  List<MatchUp> matchUps = List<MatchUp>();
+
+  LiveScoringScreenState(this.franchises);
+
+  Future<Null> loadMatchUps() {
+    final completer = Completer<Null>();
+
+    fetchMatchUps(franchises).then((matchUps) {
+      this.setState(() {
+        this.matchUps = matchUps;
+      });
+      completer.complete();
+    });
+
+    return completer.future;
   }
+
+  @override
+  void initState() {
+    super.initState();
+    loadMatchUps();
+  }
+
+  @override
+  build(BuildContext context) => RefreshIndicator(
+    onRefresh: () => loadMatchUps(),
+    child: Padding(
+      padding: EdgeInsets.only(top: 16.0),
+      child: MatchUpList(matchUps),
+    ),
+  );
 }
 
 class MatchUpList extends StatelessWidget {
@@ -50,8 +72,15 @@ class MatchUpRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        MatchUpFranchiseRow(matchUp.franchise1),
-        MatchUpFranchiseRow(matchUp.franchise2),
+        Padding(
+          padding: EdgeInsets.only(left: 8.0, right: 8.0),
+          child: Column(
+            children: [
+              MatchUpFranchiseRow(matchUp.franchise1),
+              MatchUpFranchiseRow(matchUp.franchise2),
+            ],
+          ),
+        ),
         Divider(),
       ],
     );
@@ -77,6 +106,7 @@ class MatchUpFranchiseRow extends StatelessWidget {
 Future<List<MatchUp>> fetchMatchUps(List<Franchise> franchises) async {
   final response = await http.get(url);
 
+  print(response.statusCode);
   if (response.statusCode == 200) {
     return xml.parse(response.body)
         .findAllElements('matchup')
