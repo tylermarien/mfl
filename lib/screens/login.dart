@@ -32,7 +32,7 @@ class LoginScreen extends StatelessWidget {
         final cookieValue = status.first.attributes.first.value;
 
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-          builder: (context) => MainScreen(league, cookieName, cookieValue),
+          builder: (context) => MainScreen(username, league, cookieName, cookieValue),
         ), (route) => false);
 
         return '';

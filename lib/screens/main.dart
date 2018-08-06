@@ -9,14 +9,17 @@ import 'package:mfl/screens/chat.dart';
 import 'package:mfl/screens/live_scoring.dart';
 import 'package:mfl/screens/transactions.dart';
 
-Future<List<Franchise>> fetchFranchises(League league) async {
+Future<List<Franchise>> fetchFranchises(League league, String cookieName, String cookieValue) async {
   final params = {
     'TYPE': 'league',
     'L': league.id,
   };
 
   final url = Uri.https(league.host, '/2018/export', params);
-  final response = await http.get(url);
+  final headers = {
+    'Cookie': '$cookieName=$cookieValue',
+  };
+  final response = await http.get(url, headers: headers);
 
   if (response.statusCode == 200) {
     return xml.parse(response.body)
@@ -29,21 +32,23 @@ Future<List<Franchise>> fetchFranchises(League league) async {
 }
 
 class MainScreen extends StatelessWidget {
+  final String username;
   final League league;
   final String cookieName;
   final String cookieValue;
 
-  MainScreen(this.league, this.cookieName, this.cookieValue);
+  MainScreen(this.username, this.league, this.cookieName, this.cookieValue);
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: fetchFranchises(league),
-      builder: (context, snapshot) {
+      future: fetchFranchises(league, cookieName, cookieValue),
+      builder: (context, AsyncSnapshot<List<Franchise>> snapshot) {
         if (snapshot.hasData) {
           return MyHomePage(
             title: 'Chat',
             league: league,
+            franchise: snapshot.data.firstWhere((franchise) => franchise.username == username),
             franchises: snapshot.data,
             cookieName: cookieName,
             cookieValue: cookieValue,
@@ -57,22 +62,24 @@ class MainScreen extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.league, this.franchises, this.cookieName, this.cookieValue}) : super(key: key);
+  MyHomePage({Key key, this.title, this.league, this.franchise, this.franchises, this.cookieName, this.cookieValue}) : super(key: key);
 
   final String title;
   final String cookieName;
   final String cookieValue;
   final League league;
+  final Franchise franchise;
   final List<Franchise> franchises;
 
   @override
   State<StatefulWidget> createState() {
-    return MyHomePageState(league, franchises, cookieName, cookieValue);
+    return MyHomePageState(league, franchise, franchises, cookieName, cookieValue);
   }
 }
 
 class MyHomePageState extends State<MyHomePage> {
   final League league;
+  final Franchise franchise;
   final List<Franchise> franchises;
   final String cookieName;
   final String cookieValue;
@@ -81,7 +88,7 @@ class MyHomePageState extends State<MyHomePage> {
   List<Widget> _children = [];
   List<BottomNavigationBarItem> _items;
 
-  MyHomePageState(this.league, this.franchises, this.cookieName, this.cookieValue);
+  MyHomePageState(this.league, this.franchise, this.franchises, this.cookieName, this.cookieValue);
 
   @override
   void initState() {
@@ -90,7 +97,7 @@ class MyHomePageState extends State<MyHomePage> {
     _children = [
       LiveScoringScreen(league, franchises),
       ChatScreen(cookieName, cookieValue, franchises, league),
-      TransactionsScreen(league, franchises),
+//      TransactionsScreen(league, franchises),
     ];
 
     _items = [
@@ -102,10 +109,10 @@ class MyHomePageState extends State<MyHomePage> {
         icon: Icon(Icons.chat),
         title: Text('Chat'),
       ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.format_list_numbered),
-        title: Text('Transactions'),
-      ),
+//      BottomNavigationBarItem(
+//        icon: Icon(Icons.format_list_numbered),
+//        title: Text('Transactions'),
+//      ),
     ];
   }
 
@@ -129,8 +136,9 @@ class MyHomePageState extends State<MyHomePage> {
       ),
       drawer: Drawer(
         child: ListView(
+          padding: const EdgeInsets.all(0.0),
           children: [
-            DrawerTop(league),
+            DrawerTop(franchise, league),
             ListTile(
               title: Text('Log out'),
               onTap: () {
@@ -146,22 +154,35 @@ class MyHomePageState extends State<MyHomePage> {
 }
 
 class DrawerTop extends StatelessWidget {
+  final Franchise franchise;
   final League league;
 
-  DrawerTop(this.league);
+  DrawerTop(this.franchise, this.league);
 
   @override
   Widget build(BuildContext context) {
     return DrawerHeader(
-      child: Align(
-        alignment: FractionalOffset.bottomLeft,
-        child: Text(
-          league.name,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            franchise.owner,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.0,
+              fontWeight: FontWeight.normal,
+            ),
           ),
-        ),
+          Text(
+            league.name,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
       ),
       decoration: BoxDecoration(
         color: Colors.green,
