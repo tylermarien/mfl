@@ -1,5 +1,5 @@
 import 'package:xml/xml.dart' as xml;
-import 'package:mfl/models/franchise.dart';
+import 'franchise.dart';
 
 class Message {
   Message(this.id, this.to, this.franchiseId, this.message, this.posted, this.franchise);

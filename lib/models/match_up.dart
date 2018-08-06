@@ -1,6 +1,6 @@
 import 'package:xml/xml.dart' as xml;
-import 'package:mfl/models/franchise.dart';
-import 'package:mfl/models/match_up_franchise.dart';
+import 'franchise.dart';
+import 'match_up_franchise.dart';
 
 class MatchUp {
   final MatchUpFranchise franchise1;

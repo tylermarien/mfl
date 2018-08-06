@@ -1,34 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:xml/xml.dart' as xml;
-import 'dart:async';
 import 'package:mfl/models/franchise.dart';
 import 'package:mfl/models/league.dart';
 import 'package:mfl/screens/chat.dart';
 import 'package:mfl/screens/live_scoring.dart';
 import 'package:mfl/widgets/mfl_drawer.dart';
-
-Future<List<Franchise>> fetchFranchises(League league, String cookieName, String cookieValue) async {
-  final params = {
-    'TYPE': 'league',
-    'L': league.id,
-  };
-
-  final url = Uri.https(league.host, '/2018/export', params);
-  final headers = {
-    'Cookie': '$cookieName=$cookieValue',
-  };
-  final response = await http.get(url, headers: headers);
-
-  if (response.statusCode == 200) {
-    return xml.parse(response.body)
-        .findAllElements('franchise')
-        .map((element) => Franchise.fromXml(element))
-        .toList();
-  } else {
-    throw Exception('Cannot load franchises');
-  }
-}
+import 'package:mfl/api/franchises.dart';
 
 class MainScreen extends StatelessWidget {
   final String username;
