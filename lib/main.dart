@@ -81,7 +81,7 @@ class MyAppState extends State<MyApp> {
         future: fetchFranchises(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return MyHomePage(title: 'Chat', franchises: snapshot.data);
+            return MyHomePage(title: 'Chat', franchises: snapshot.data, cookieName: cookieName, cookieValue: cookieValue);
           }
 
           return Center(child: CircularProgressIndicator());
@@ -102,24 +102,28 @@ class MyAppState extends State<MyApp> {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.franchises}) : super(key: key);
+  MyHomePage({Key key, this.title, this.franchises, this.cookieName, this.cookieValue}) : super(key: key);
 
   final String title;
+  final String cookieName;
+  final String cookieValue;
   final List<Franchise> franchises;
 
   @override
   State<StatefulWidget> createState() {
-    return MyHomePageState(franchises);
+    return MyHomePageState(franchises, cookieName, cookieValue);
   }
 }
 
 class MyHomePageState extends State<MyHomePage> {
   final List<Franchise> franchises;
+  final String cookieName;
+  final String cookieValue;
 
-  MyHomePageState(this.franchises) {
+  MyHomePageState(this.franchises, this.cookieName, this.cookieValue) {
     _children = [
       LiveScoringScreen(franchises),
-      ChatScreen(),
+      ChatScreen(cookieName: cookieName, cookieValue: cookieValue),
       TradesScreen(),
     ];
   }
