@@ -124,7 +124,7 @@ class MyHomePageState extends State<MyHomePage> {
   MyHomePageState(this.franchises, this.cookieName, this.cookieValue) {
     _children = [
       LiveScoringScreen(franchises),
-      ChatScreen(cookieName: cookieName, cookieValue: cookieValue),
+      ChatScreen(cookieName, cookieValue, franchises),
       TradesScreen(),
     ];
   }

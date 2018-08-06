@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 
-class MessageBar extends StatelessWidget {
-  final TextEditingController controller = TextEditingController();
+class MessageBar extends StatefulWidget {
   final sendMessage;
 
   MessageBar(this.sendMessage);
+
+  @override
+  State<StatefulWidget> createState() => MessageBarState(this.sendMessage);
+}
+
+class MessageBarState extends State<MessageBar> {
+  final TextEditingController controller = TextEditingController();
+  final sendMessage;
+
+  MessageBarState(this.sendMessage);
 
   void handleMessageSubmitted(String message) {
     sendMessage(controller.text);
