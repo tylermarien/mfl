@@ -6,7 +6,7 @@ import 'package:mfl/models/franchise.dart';
 import 'package:mfl/models/league.dart';
 import 'package:mfl/screens/chat.dart';
 import 'package:mfl/screens/live_scoring.dart';
-import 'package:mfl/screens/trades.dart';
+import 'package:mfl/screens/transactions.dart';
 
 Future<List<Franchise>> fetchFranchises(League league) async {
   final params = {
@@ -89,7 +89,7 @@ class MyHomePageState extends State<MyHomePage> {
     _children = [
       LiveScoringScreen(league, franchises),
       ChatScreen(cookieName, cookieValue, franchises, league),
-      TradesScreen(league),
+      TransactionsScreen(league, franchises),
     ];
 
     _items = [
@@ -103,7 +103,7 @@ class MyHomePageState extends State<MyHomePage> {
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.format_list_numbered),
-        title: Text('Trades'),
+        title: Text('Transactions'),
       ),
     ];
   }
