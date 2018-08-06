@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
 import 'dart:convert';
+import 'package:mfl/models/message.dart';
+import 'package:mfl/widgets/message_list.dart';
+import 'package:mfl/widgets/message_bar.dart';
 
 final fetchDuration = Duration(seconds: 2);
 
@@ -13,23 +16,28 @@ class ChatScreen extends StatefulWidget {
   ChatScreen({this.cookieName, this.cookieValue});
 
   @override
-  State<StatefulWidget> createState() => ChatScreenState(cookieName: this.cookieName, cookieValue: this.cookieValue);
+  State<StatefulWidget> createState() => ChatScreenState(
+      cookieName: this.cookieName,
+      cookieValue: this.cookieValue
+  );
 }
 
 class ChatScreenState extends State<ChatScreen> {
   final String cookieName;
   final String cookieValue;
 
+  Timer timer;
+
   TextEditingController controller = TextEditingController();
   List<Message> messages = List<Message>();
 
   ChatScreenState({this.cookieName, this.cookieValue});
 
-  void handleMessageSubmitted(String message) {
-      controller.text = '';
-      sendMessage(cookieName, cookieValue, message).then((http.Response response) {
-        loadMessages();
-      });
+  void handleSendMessage(String message) {
+    sendMessage(cookieName, cookieValue, message)
+        .then((http.Response response) {
+          loadMessages();
+        });
   }
 
   void loadMessages() {
@@ -38,7 +46,6 @@ class ChatScreenState extends State<ChatScreen> {
         this.messages = messages;
       });
     });
-
   }
 
   List<Message> filteredMessages() {
@@ -50,9 +57,15 @@ class ChatScreenState extends State<ChatScreen> {
     super.initState();
 
     loadMessages();
-//    Timer.periodic(fetchDuration, (Timer timer) {
-//      loadMessages();
-//    });
+    timer = Timer.periodic(fetchDuration, (Timer timer) {
+      loadMessages();
+    });
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    timer.cancel();
   }
 
   @override
@@ -60,37 +73,8 @@ class ChatScreenState extends State<ChatScreen> {
     return Column(
       children: [
         MessageList(filteredMessages()),
-        TextField(
-          controller: controller,
-          onSubmitted: handleMessageSubmitted,
-        )
+        MessageBar(handleSendMessage),
       ],
-    );
-  }
-}
-
-class MessageList extends StatelessWidget {
-  final List<Message> messages;
-
-  MessageList(this.messages);
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-        child: ListView.builder(
-          reverse: true,
-          padding: EdgeInsets.all(8.0),
-          itemBuilder: (BuildContext context, int index) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(messages[index].message),
-                Divider(),
-              ],
-            );
-          },
-          itemCount: messages.length,
-        )
     );
   }
 }
@@ -122,24 +106,4 @@ Future<http.Response> sendMessage(String cookieName, String cookieValue, String 
   };
   final url = Uri.https(host, '/2018/chat_save', params);
   return http.get(url, headers: headers);
-}
-
-class Message {
-  Message(this.id, this.to, this.franchiseId, this.message, this.posted);
-
-  final String id;
-  final String to;
-  final String franchiseId;
-  final String message;
-  final String posted;
-
-  factory Message.fromXml(xml.XmlElement element) {
-    return Message(
-      element.getAttribute('id'),
-      element.getAttribute('to'),
-      element.getAttribute('franchise_id'),
-      element.getAttribute('message'),
-      element.getAttribute('posted'),
-    );
-  }
 }

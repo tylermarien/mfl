@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:mfl/models/match_up_franchise.dart';
+import 'package:mfl/models/franchise.dart';
+import 'package:mfl/models/match_up.dart';
 
 const url = 'http://www66.myfantasyleague.com/2018/export?TYPE=liveScoring&L=40298';
 
@@ -106,7 +109,6 @@ class MatchUpFranchiseRow extends StatelessWidget {
 Future<List<MatchUp>> fetchMatchUps(List<Franchise> franchises) async {
   final response = await http.get(url);
 
-  print(response.statusCode);
   if (response.statusCode == 200) {
     return xml.parse(response.body)
         .findAllElements('matchup')
@@ -114,52 +116,5 @@ Future<List<MatchUp>> fetchMatchUps(List<Franchise> franchises) async {
         .toList();
   } else {
     throw Exception('Cannot fetch matchups');
-  }
-}
-
-class Franchise {
-  final String id;
-  final String name;
-
-  Franchise(this.id, this.name);
-
-  factory Franchise.fromXml(xml.XmlElement element) {
-    return Franchise(
-      element.getAttribute('id'),
-      element.getAttribute('name'),
-    );
-  }
-}
-
-class MatchUp {
-  final MatchUpFranchise franchise1;
-  final MatchUpFranchise franchise2;
-
-  MatchUp(this.franchise1, this.franchise2);
-
-  factory MatchUp.fromXml(List<Franchise> franchises, xml.XmlElement element) {
-    final franchiseElements = element.findAllElements('franchise').toList();
-    return MatchUp(
-      MatchUpFranchise.fromXml(franchises, franchiseElements[0]),
-      MatchUpFranchise.fromXml(franchises, franchiseElements[1]),
-    );
-  }
-}
-
-class MatchUpFranchise {
-  final String id;
-  final String name;
-  final String score;
-
-  MatchUpFranchise(this.id, this.name, this.score);
-
-  factory MatchUpFranchise.fromXml(List<Franchise> franchises, xml.XmlElement element) {
-    final id = element.getAttribute('id');
-    final franchise = franchises.firstWhere((element) => element.id == id);
-    return MatchUpFranchise(
-      id,
-      franchise.name,
-      element.getAttribute('score'),
-    );
   }
 }

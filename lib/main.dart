@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:mfl/models/franchise.dart';
 import 'package:mfl/screens/login.dart';
 import 'package:mfl/screens/chat.dart';
 import 'package:mfl/screens/live_scoring.dart';
